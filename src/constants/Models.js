@@ -1,0 +1,3 @@
+export const LOAD = 'LOAD'
+export const START_PROGRESS = 'START_PROGRESS'
+export const UPDATE_PROGRESS = 'UPDATE_PROGRESS'
