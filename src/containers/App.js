@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import * as AppActions from '../actions/AppActions'
+import * as ModelsActions from '../actions/ModelsActions'
 
 import Header from '../components/header'
 import Footer from '../components/footer'
@@ -9,6 +9,10 @@ import Footer from '../components/footer'
 import './style.css'
 
 class App extends Component {
+    componentDidMount() {
+        this.props.load()
+    }
+
     render() {
         return <div>
             <Header title={this.props.title} />
@@ -27,8 +31,9 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
+    const modelsActions = bindActionCreators(ModelsActions, dispatch);
     return {
-        AppActions: bindActionCreators(AppActions, dispatch)
+        load: modelsActions.load
     }
 }
 

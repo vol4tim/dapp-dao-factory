@@ -1,46 +1,26 @@
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
 import View from '../../components/models/view';
+import NotFound from '../../components/models/notFound';
+import { getModelByCode } from '../../selectors/models';
 
-function mapStateToProps(state, props) {
-    const model = _.find(state.models.items, { 'code': props.params.code });
-    if (_.has(model, 'core') && _.isString(model.core)) {
-        model.core = {
-            name: model.core,
-            description: ''
+export default class ViewConteiner extends Component {
+    render() {
+        var component;
+        if (!this.props.model) {
+            component = <NotFound />
+        } else {
+            component = <View {...this.props.model} />
         }
-    } else if (!_.has(model.core, 'description')) {
-        model.core.description = ''
-    }
-    if (_.has(model, 'modules')) {
-        model.modules = _.map(model.modules, function(module) {
-            if (_.isString(module)) {
-                return {
-                    'name': module,
-                    'description': '',
-                    'address': '',
-                    'params': {},
-                    'params_link': {}
-                }
-            }
-            if (!_.has(module, 'description')) {
-                module.description = ''
-            }
-            if (!_.has(module, 'address')) {
-                module.address = ''
-            }
-            if (!_.has(module, 'params')) {
-                module.params = {}
-            }
-            if (!_.has(module, 'params_link')) {
-                module.params_link = {}
-            }
-            return module
-        })
-    }
-    return {
-        ...model
+        return component
     }
 }
 
-export default connect(mapStateToProps)(View)
+function mapStateToProps(state, props) {
+    const model = getModelByCode(state.models.items, props.params.code);
+    return {
+        model
+    }
+}
+
+export default connect(mapStateToProps)(ViewConteiner)

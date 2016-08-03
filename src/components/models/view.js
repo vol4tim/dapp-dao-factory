@@ -30,11 +30,12 @@ export default class View extends Component {
 View.propTypes = {
     code: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
+    description: PropTypes.string,
     core: PropTypes.object,
     modules: PropTypes.array
 }
 View.defaultProps = {
     core: {},
+    description: '',
     modules: []
 }
