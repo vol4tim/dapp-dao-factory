@@ -18,7 +18,7 @@ export default function models(state = initialState, action) {
             var status = 1
             var progress = state.progress
 
-            if (!_.isEmpty(progress.core) && action.payload.module_index == 0) {
+            if (!_.isEmpty(progress.core) && action.payload.module_index == -1) {
                 var core = {...progress.core, address: action.payload.address}
                 progress = {...progress, core: core}
             } else {

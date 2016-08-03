@@ -50,6 +50,7 @@ module.exports = {
           test: /\.js$/,
           plugins: ['transform-runtime']
         }
-      ]
+    ],
+    noParse: /localforage/
   }
 }

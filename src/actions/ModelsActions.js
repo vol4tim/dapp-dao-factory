@@ -3,6 +3,7 @@ import _ from 'lodash'
 import axios from 'axios'
 import { LOAD, START_PROGRESS, UPDATE_PROGRESS } from '../constants/Models'
 import { loadAbis, loadAbiByName, getContract, createModule, linkCore } from '../utils/dao_factory'
+import { add as daoAdd } from './DaosActions'
 
 export function load() {
     return dispatch => {
@@ -19,7 +20,7 @@ export function load() {
     }
 }
 
-export function startProgress(code, factory, core, modules) {
+export function startProgress(code, factory, model_version, core, modules) {
     return dispatch => {
         var abi_names = _.map(modules, 'name');
         abi_names = _.uniq(abi_names);
@@ -113,6 +114,7 @@ export function startProgress(code, factory, core, modules) {
                     payload: {
                         status: 0,
                         code,
+                        model_version,
                         factory,
                         core: core_obj,
                         modules: progress_modules
@@ -143,7 +145,7 @@ export function submitStep(factory_address, progress, module_index, params) {
             user_name_module = params.name_module_core; // для core.setModule (linkCore)
             params = _.omit(params, ['name_module_core']);
         }
-        if (!_.isEmpty(progress.core) && module_index == 0) {
+        if (!_.isEmpty(progress.core) && module_index == -1) {
             module = progress.core
         } else {
             module = progress.modules[module_index]
@@ -174,6 +176,18 @@ export function submitStep(factory_address, progress, module_index, params) {
                 dispatch(stopSubmit('ModuleForm'));
                 dispatch(updateProgress(module_index, new_module_address));
                 dispatch(reset('ModuleForm'));
+
+                // если готов core и нет модулей или готов последний модуль
+                if (!_.isEmpty(progress.core) && ((module_index == -1 && progress.modules.length == 0) || progress.modules.length - 1 == module_index)) {
+                    var address;
+                    if (progress.core.address!='') {
+                        address = progress.core.address
+                    } else {
+                        address = new_module_address
+                    }
+                    var dao = getContract(core_abi, address);
+                    dispatch(daoAdd(progress.code, dao.name(), address, progress.model_version))
+                }
             }).
             catch(function(e) {
                 console.log('SUBMIT ERR', e);

@@ -8,6 +8,7 @@ import NotFound from './components/NotFound'
 import Models from './containers/models'
 import ModelView from './containers/models/view'
 import ModelCreate from './containers/models/create'
+import Daos from './containers/daos'
 
 export const routes = (store) => {
 
@@ -22,6 +23,7 @@ export const routes = (store) => {
                 <IndexRoute component={Models} title='Dapp DAO factory' />
                 <Route path='view/:code' component={ModelView} title='Dapp DAO factory' />
                 <Route path='create/:code' component={ModelCreate} title='Dapp DAO factory' />
+                <Route path='daos' component={Daos} title='Dapp DAO factory' />
             </Route>
             <Route path='*' component={NotFound} />
         </div>

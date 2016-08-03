@@ -13,8 +13,8 @@ export default class Create extends Component {
     }
 
     startProgress() {
-        const { code, factory, core, modules } = this.props
-        this.props.startProgress(code, factory, core, modules);
+        const { code, factory, version, core, modules } = this.props
+        this.props.startProgress(code, factory, version, core, modules);
     }
 
     getProgress() {
@@ -39,7 +39,7 @@ export default class Create extends Component {
                             fields={progress.core.fields}
                             params={progress.core.params}
                             data={progress.core.data}
-                            onSubmit={(values)=>submitStep(factory, progress, 0, values)}
+                            onSubmit={(values)=>submitStep(factory, progress, -1, values)}
                         />)
                         status = 0
                     }
@@ -126,6 +126,7 @@ export default class Create extends Component {
 Create.propTypes = {
     code: PropTypes.string.isRequired,
     factory: PropTypes.string.isRequired,
+    version: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     url: PropTypes.string,
     core: PropTypes.object,
