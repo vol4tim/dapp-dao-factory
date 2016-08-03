@@ -8,7 +8,6 @@ export function load() {
     return dispatch => {
         axios.get('dapps.json').
             then((result)=>{
-                console.log(result.data);
                 dispatch({
                     type: LOAD,
                     payload: result.data
@@ -23,6 +22,7 @@ export function load() {
 export function startProgress(code, factory, core, modules) {
     return dispatch => {
         var abi_names = _.map(modules, 'name');
+        abi_names = _.uniq(abi_names);
         if (!_.isEmpty(core)) {
             abi_names.unshift(core.name);
         }
@@ -125,17 +125,17 @@ export function startProgress(code, factory, core, modules) {
     }
 }
 
-export function updateProgress(module, address) {
+export function updateProgress(module_index, address) {
     return {
         type: UPDATE_PROGRESS,
         payload: {
-            module,
+            module_index,
             address
         }
     }
 }
 
-export function submitStep(factory_address, progress, module, params) {
+export function submitStep(factory_address, progress, module_index, params) {
     return dispatch => {
 
         var user_name_module = false;
@@ -143,10 +143,10 @@ export function submitStep(factory_address, progress, module, params) {
             user_name_module = params.name_module_core; // для core.setModule (linkCore)
             params = _.omit(params, ['name_module_core']);
         }
-        if (!_.isEmpty(progress.core) && progress.core.name == module) {
+        if (!_.isEmpty(progress.core) && module_index == 0) {
             module = progress.core
         } else {
-            module = _.find(progress.modules, {name: module})
+            module = progress.modules[module_index]
         }
         if (!_.isObject(module)) {
             console.log('SUBMIT ERR NOT FIND MODULE');
@@ -172,7 +172,7 @@ export function submitStep(factory_address, progress, module, params) {
             }).
             then((new_module_address)=>{
                 dispatch(stopSubmit('ModuleForm'));
-                dispatch(updateProgress(module.name, new_module_address));
+                dispatch(updateProgress(module_index, new_module_address));
                 dispatch(reset('ModuleForm'));
             }).
             catch(function(e) {

@@ -39,7 +39,7 @@ export default class Create extends Component {
                             fields={progress.core.fields}
                             params={progress.core.params}
                             data={progress.core.data}
-                            onSubmit={(values)=>submitStep(factory, progress, progress.core.name, values)}
+                            onSubmit={(values)=>submitStep(factory, progress, 0, values)}
                         />)
                         status = 0
                     }
@@ -47,7 +47,7 @@ export default class Create extends Component {
 
                 if (_.isEmpty(progress.core) || progress.core.address!='') {
                     // проходим по всем модулям
-                    _.each(progress.modules, function(item) {
+                    _.each(progress.modules, function(item, index) {
                         // если модуль готовый
                         if (item.address!='') {
                             // показываем вьюху готового шага
@@ -61,7 +61,7 @@ export default class Create extends Component {
                                 fields={item.fields}
                                 params={item.params}
                                 data={item.data}
-                                onSubmit={(values)=>submitStep(factory, progress, item.name, values)}
+                                onSubmit={(values)=>submitStep(factory, progress, index, values)}
                             />)
                             return false;
                         }
