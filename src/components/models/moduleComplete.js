@@ -1,16 +1,14 @@
-import React, { PropTypes, Component } from 'react'
+import React, { PropTypes } from 'react'
 
-export default class ModuleComplete extends Component {
-    render() {
-        const { name, description, address } = this.props
+const ModuleComplete = function(props) {
+    const { name, description, address } = props
 
-        return <div className="panel panel-default">
-            <div className="panel-heading">Модуль "{name}" {description}</div>
-            <div className="panel-body">
-                Готово. Адрес: {address}
-            </div>
+    return <div className="panel panel-default">
+        <div className="panel-heading">Модуль "{name}" {description}</div>
+        <div className="panel-body">
+            Готово. Адрес: {address}
         </div>
-    }
+    </div>
 }
 
 ModuleComplete.propTypes = {
@@ -21,3 +19,5 @@ ModuleComplete.propTypes = {
 ModuleComplete.defaultProps = {
     description: ''
 }
+
+export default ModuleComplete

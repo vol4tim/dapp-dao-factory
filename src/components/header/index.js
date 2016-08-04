@@ -28,7 +28,7 @@ export default class Header extends Component {
                 </div>
                 <div className={'collapse navbar-collapse '+ ((this.state.open) ? style.menu_open : style.menu_hide)}>
                     <ul className="nav navbar-nav navbar-right">
-                        <li><Link to={'/daos'}>Мои DAO</Link></li>
+                        <li><Link to={'/daos'} activeClassName={style.active}>Мои DAO</Link></li>
                     </ul>
                 </div>
             </div>

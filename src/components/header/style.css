@@ -3,10 +3,13 @@
     z-index: 2;
     border-top: 1px solid #e6e6e6;
 }
-
 .menu_open {
     display: block;
 }
 .menu_hide {
     display: none;
+}
+.active, .active:focus, .active:hover {
+    color: #fff !important;
+    background-color: #080808 !important;
 }

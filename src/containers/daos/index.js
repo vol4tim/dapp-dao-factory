@@ -18,10 +18,13 @@ class DaosConteiner extends Component {
 function mapStateToProps(state) {
     var items = _.map(state.daos.items, function(item) {
         var model = _.find(state.models.items, {code: item.code})
-        if (model && _.has(model, 'url') && model.url != '') {
-            var url_dapp = model.url
-            url_dapp = url_dapp.replace(':address', item.address)
-            item.url = url_dapp
+        if (model) {
+            if (_.has(model, 'url') && model.url != '') {
+                var url_dapp = model.url
+                url_dapp = url_dapp.replace(':address', item.address)
+                item.url = url_dapp
+            }
+            item.model_version = model.version
         }
         return item
     })
