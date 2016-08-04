@@ -1,5 +1,6 @@
 import React, { PropTypes, Component } from 'react'
 import { reduxForm } from 'redux-form'
+import style from './style.css'
 
 export default class ModuleForm extends Component {
     render() {
@@ -31,12 +32,22 @@ export default class ModuleForm extends Component {
                     })}
                     <div className="form-group">
                         <div className="text-center">
-                            <input
-                                type='submit'
-                                className="btn btn-default"
-                                disabled={submitting}
-                                value={submitting ? '...' : 'Подтвердить'}
-                                />
+                            {submitting ?
+                                <div className={style.wave +' '+ style['fade-in']}>
+                                    <div className={style.rect1}></div>
+                                    <div className={style.rect2}></div>
+                                    <div className={style.rect3}></div>
+                                    <div className={style.rect4}></div>
+                                    <div className={style.rect5}></div>
+                                </div>
+                            :
+                                <input
+                                    type='submit'
+                                    className="btn btn-default"
+                                    disabled={submitting}
+                                    value={submitting ? '...' : 'Подтвердить'}
+                                    />
+                            }
                         </div>
                     </div>
                     {error && <div>{error}</div>}
