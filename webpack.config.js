@@ -2,11 +2,8 @@ var path = require('path')
 var webpack = require('webpack')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 
-module.exports = {
-  devtool: 'source-map',
-
+const config = {
   entry: [
-    'webpack-hot-middleware/client',
     'babel-polyfill',
     './src/index'
   ],
@@ -17,12 +14,8 @@ module.exports = {
   },
   plugins: [
     new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
-    new ExtractTextPlugin('bundle.css')/*,
-    new webpack.optimize.UglifyJsPlugin({
-      compress: { warnings: false }
-  })*/
+    new ExtractTextPlugin('bundle.css')
   ],
   module: {
       preLoaders: [
@@ -54,3 +47,28 @@ module.exports = {
     noParse: /localforage/
   }
 }
+
+if (process.env.NODE_ENV === 'production') {
+    config.plugins.push(
+        new webpack.optimize.UglifyJsPlugin({
+            compress: { warnings: false }
+        })
+    )
+    config.plugins.push(
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: JSON.stringify('production')
+            }
+        })
+    )
+} else {
+    config.devtool = 'source-map'
+    config.entry.push(
+        'webpack-hot-middleware/client'
+    );
+    config.plugins.push(
+        new webpack.HotModuleReplacementPlugin()
+    );
+}
+
+module.exports = config
