@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { getWeb3 } from '../utils/dao_factory'
 import * as ModelsActions from '../actions/ModelsActions'
 
 import Header from '../components/header'
@@ -10,14 +11,20 @@ import './style.css'
 
 class App extends Component {
     componentDidMount() {
-        this.props.load()
+        if (getWeb3()) {
+            this.props.load()
+        }
     }
 
     render() {
         return <div>
             <Header title={this.props.title} />
             <div className="container">
-                {this.props.children}
+                {getWeb3() ?
+                    this.props.children
+                    :
+                    <p>нужен mist</p>
+                }
             </div>
             <Footer />
         </div>

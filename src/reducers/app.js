@@ -1,7 +1,7 @@
 import { SET_TITLE } from '../constants/App'
 
 const initialState = {
-    title: 'React ethereum'
+    title: 'Dapp DAO factory'
 }
 
 export default function app(state = initialState, action) {

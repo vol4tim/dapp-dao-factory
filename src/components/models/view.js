@@ -4,9 +4,10 @@ import { Link } from 'react-router'
 
 export default class View extends Component {
     render() {
-        const { code, name, description, core, modules } = this.props
+        const { code, name, description, version, core, modules } = this.props
 
         return <div>
+            <span className="label label-warning pull-right">{version}</span>
             <h1>{name}</h1>
             <div className="row">
                 <div className="col-md-4">
@@ -31,6 +32,7 @@ View.propTypes = {
     code: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     description: PropTypes.string,
+    version: PropTypes.string.isRequired,
     core: PropTypes.object,
     modules: PropTypes.array
 }

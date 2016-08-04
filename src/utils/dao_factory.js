@@ -2,12 +2,27 @@ var Promise = require('es6-promise').Promise;
 var _ = require('lodash')
 var axios = require('axios');
 
-if (typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
-    web3 = new Web3(web3.currentProvider);
-} else if (typeof Web3 !== 'undefined') {
-    web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-} else if(typeof web3 == 'undefined' && typeof Web3 == 'undefined') {
-    throw new Error('Err web3');
+// if (typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
+//     web3 = new Web3(web3.currentProvider);
+// } else if (typeof Web3 !== 'undefined') {
+//     web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+// } else if(typeof web3 == 'undefined' && typeof Web3 == 'undefined') {
+//     throw new Error('Err web3');
+// }
+
+// var web3js = null;
+// if () {
+//
+// }
+export function getWeb3() {
+    if (typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+    } else if (typeof Web3 !== 'undefined') {
+        web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+    } else if(typeof web3 == 'undefined' && typeof Web3 == 'undefined') {
+        return false
+    }
+    return web3
 }
 
 export function getUrlAbi(contract) {
