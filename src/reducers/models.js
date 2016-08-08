@@ -15,7 +15,6 @@ export default function models(state = initialState, action) {
             return { ...state, progress: action.payload}
 
         case UPDATE_PROGRESS:
-            var status = 1
             var progress = state.progress
 
             if (!_.isEmpty(progress.core) && action.payload.module_index == -1) {
@@ -31,18 +30,9 @@ export default function models(state = initialState, action) {
                 progress = {...progress, modules: modules}
             }
 
-            // если есть модуль core и если core еще не готов
-            if (!_.isEmpty(progress.core) && progress.core.address=='') {
-                status = 0
-            } else {
-                // проходим по всем модулям
-                _.each(progress.modules, function(item) {
-                    // если модуль не готов
-                    if (item.address=='') {
-                        status = 0
-                        return false;
-                    }
-                })
+            var status = 0
+            if (action.payload.last) {
+                status = 1
             }
 
             // перепривязываем готовые модули, чтоб в форме уже были заполнены поля

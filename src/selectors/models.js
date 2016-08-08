@@ -15,10 +15,16 @@ function normalize(model) {
     if (_.isString(model.core)) {
         model.core = {
             name: model.core,
-            description: ''
+            description: '',
+            address: ''
         }
-    } else if (!_.has(model.core, 'description')) {
-        model.core.description = ''
+    } else {
+        if (!_.has(model.core, 'description')) {
+            model.core.description = ''
+        }
+        if (!_.has(model.core, 'address')) {
+            model.core.address = ''
+        }
     }
     if (_.has(model, 'modules')) {
         model.modules = _.map(model.modules, function(module) {

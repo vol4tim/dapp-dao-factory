@@ -1,19 +1,19 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
-import View from '../../components/models/view';
+import { Link } from 'react-router'
+import Layout from '../../components/models/layout';
+import Sidebar from '../../components/models/sidebar';
 import NotFound from '../../components/models/notFound';
 import { getModelByCode } from '../../selectors/models';
 
-export default class ViewConteiner extends Component {
-    render() {
-        var component;
-        if (!this.props.model) {
-            component = <NotFound />
-        } else {
-            component = <View {...this.props.model} />
-        }
-        return component
+const ViewConteiner = function(props) {
+    if (!props.model) {
+        return <NotFound />
     }
+    return <Layout {...props.model}
+        sidebar={<Sidebar {...props.model}
+        link_create={<Link to={'/create/'+ props.model.code} className="btn btn-default">Создать</Link>} />}
+        children={<p>{props.model.description}</p>} />
 }
 
 function mapStateToProps(state, props) {

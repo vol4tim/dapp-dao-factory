@@ -20,12 +20,13 @@ export function load() {
     }
 }
 
-export function startProgress(code, factory, model_version, core, modules) {
+export function startProgress(model) {
     return dispatch => {
-        var abi_names = _.map(modules, 'name');
+        var abi_names = _.map(model.modules, 'name');
         abi_names = _.uniq(abi_names);
-        if (!_.isEmpty(core)) {
-            abi_names.unshift(core.name);
+        abi_names = _.compact(abi_names);
+        if (!_.isEmpty(model.core)) {
+            abi_names.unshift(model.core.name);
         }
         abi_names.unshift('Core');
 
@@ -36,16 +37,15 @@ export function startProgress(code, factory, model_version, core, modules) {
                 }, {});
 
                 var abi, func;
-                var core_obj = {};
 
                 // подготавливаем данные для формы для создания core
-                if (!_.isEmpty(core)) {
-                    abi = abis[core.name]
+                if (!_.isEmpty(model.core)) {
+                    abi = abis[model.core.name]
                     func = _.find(abi, {name: 'create'});
                     var fields = (func) ? _.map(func.inputs, 'name') : []
                     var labels = {}
-                    if (_.has(core, 'params')) {
-                        labels = core.params
+                    if (_.has(model.core, 'params')) {
+                        labels = model.core.params
                     }
                     var params = (func) ? _.map(func.inputs, function(item) {
                         var label = item.name
@@ -58,11 +58,9 @@ export function startProgress(code, factory, model_version, core, modules) {
                     var data = _.reduce(fields, function(result, value) {
                         return _.set(result, value, '');
                     }, {});
-                    core_obj = {
-                        name: core.name,
-                        description: core.description,
+                    model.core = {
+                        ...model.core,
                         abi: abi,
-                        address: (_.has(core, 'address')) ? core.address : '',
                         fields: fields,
                         params: params,
                         data: data
@@ -70,7 +68,7 @@ export function startProgress(code, factory, model_version, core, modules) {
                 }
 
                 // подготавливаем данные для формы для для каждого из требуемого модуля
-                var progress_modules = _.map(modules, function(module) {
+                model.modules = _.map(model.modules, function(module) {
                     abi = abis[module.name]
                     func = _.find(abi, {name: 'create'});
                     var fields = (func) ? _.map(func.inputs, 'name') : []
@@ -90,21 +88,18 @@ export function startProgress(code, factory, model_version, core, modules) {
                         return _.set(result, value, '');
                     }, {});
                     return {
-                        name: module.name,
-                        description: module.description,
+                        ...module,
                         abi: abi,
-                        address: module.address,
                         fields: fields,
                         params: params,
-                        params_link: module.params_link,
                         data: data
                     }
                 });
 
                 // привязываем готовые модули
-                progress_modules = _.map(progress_modules, function(item) {
+                model.modules = _.map(model.modules, function(item) {
                     _.each(item.params_link, function(index, param) {
-                        item.data[param] = progress_modules[index].address
+                        item.data[param] = model.modules[index].address
                     })
                     return item
                 })
@@ -113,11 +108,7 @@ export function startProgress(code, factory, model_version, core, modules) {
                     type: START_PROGRESS,
                     payload: {
                         status: 0,
-                        code,
-                        model_version,
-                        factory,
-                        core: core_obj,
-                        modules: progress_modules
+                        ...model
                     }
                 })
             }).
@@ -127,17 +118,18 @@ export function startProgress(code, factory, model_version, core, modules) {
     }
 }
 
-export function updateProgress(module_index, address) {
+export function updateProgress(module_index, address, last) {
     return {
         type: UPDATE_PROGRESS,
         payload: {
             module_index,
-            address
+            address,
+            last
         }
     }
 }
 
-export function submitStep(factory_address, progress, module_index, params) {
+export function submitStep(factory_address, progress, module_index, last, params) {
     return dispatch => {
 
         var user_name_module = false;
@@ -162,7 +154,7 @@ export function submitStep(factory_address, progress, module_index, params) {
             then((abi)=>{
                 core_abi = abi.data;
                 var factory = getContract(core_abi, factory_address);
-                var builder = getContract(module.abi, factory.getModule(module.name));
+                var builder = getContract(module.abi, factory/*.getModule(module.name)*/);
                 return createModule(params, builder)
             }).
             then((new_module_address)=>{
@@ -174,19 +166,19 @@ export function submitStep(factory_address, progress, module_index, params) {
             }).
             then((new_module_address)=>{
                 dispatch(stopSubmit('ModuleForm'));
-                dispatch(updateProgress(module_index, new_module_address));
+                dispatch(updateProgress(module_index, new_module_address, last));
                 dispatch(reset('ModuleForm'));
 
                 // если готов core и нет модулей или готов последний модуль
-                if (!_.isEmpty(progress.core) && ((module_index == -1 && progress.modules.length == 0) || progress.modules.length - 1 == module_index)) {
-                    var address;
+                if (last) {
+                    var dao_address;
                     if (progress.core.address!='') {
-                        address = progress.core.address
+                        dao_address = progress.core.address
                     } else {
-                        address = new_module_address
+                        dao_address = new_module_address
                     }
-                    var dao = getContract(core_abi, address);
-                    dispatch(daoAdd(progress.code, dao.name(), address, progress.model_version))
+                    var dao = getContract(core_abi, dao_address);
+                    dispatch(daoAdd(progress.code, dao.name(), dao_address, progress.version))
                 }
             }).
             catch(function(e) {

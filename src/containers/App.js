@@ -10,7 +10,7 @@ import Footer from '../components/footer'
 import './style.css'
 
 class App extends Component {
-    componentDidMount() {
+    componentWillMount() {
         if (getWeb3()) {
             this.props.load()
         }
