@@ -1,4 +1,11 @@
-import { SET_TITLE } from '../constants/App'
+import { LOADER, SET_TITLE } from '../constants/App'
+
+export function loader(loader) {
+    return {
+        type: LOADER,
+        payload: loader
+    }
+}
 
 export function setTitle(title) {
     return {

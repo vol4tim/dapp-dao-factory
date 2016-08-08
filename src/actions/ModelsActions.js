@@ -3,16 +3,19 @@ import _ from 'lodash'
 import axios from 'axios'
 import { LOAD, START_PROGRESS, UPDATE_PROGRESS } from '../constants/Models'
 import { loadAbis, loadAbiByName, getContract, createModule, linkCore } from '../utils/dao_factory'
+import { loader as appLoader } from './AppActions'
 import { add as daoAdd } from './DaosActions'
 
 export function load() {
     return dispatch => {
+        dispatch(appLoader(true))
         axios.get('dapps.json').
             then((result)=>{
                 dispatch({
                     type: LOAD,
                     payload: result.data
                 })
+                dispatch(appLoader(false))
             }).
             catch(function(e) {
                 console.log('LOAD ERR',e);

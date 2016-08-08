@@ -21,7 +21,7 @@ class App extends Component {
             <Header title={this.props.title} />
             <div className="container">
                 {getWeb3() ?
-                    this.props.children
+                    (!this.props.loader) ? this.props.children : <p className="text-center">Загрузка...</p>
                     :
                     <p>нужен mist</p>
                 }
@@ -33,6 +33,7 @@ class App extends Component {
 
 function mapStateToProps(state) {
     return {
+        loader: state.app.loader,
         title: state.app.title
     }
 }
