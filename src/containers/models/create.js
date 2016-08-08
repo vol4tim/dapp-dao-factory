@@ -36,7 +36,7 @@ export default class ViewConteiner extends Component {
                 // если core готов
                 if (core.address!='') {
                     // показываем вьюху готового шага
-                    progress_view.push(<ModuleComplete name={core.name} description={core.description} address={core.address} />)
+                    progress_view.push(<ModuleComplete name="DAO" module={core.module_factory} description={core.description} address={core.address} />)
                 } else {
                     var last = true
                     if (modules.length>0) {
@@ -44,7 +44,8 @@ export default class ViewConteiner extends Component {
                     }
                     // показываем форму core
                     progress_view.push(<ModuleForm
-                        name={core.name}
+                        name="DAO"
+                        module={core.module_factory}
                         description={core.description}
                         fields={core.fields}
                         params={core.params}
@@ -61,7 +62,7 @@ export default class ViewConteiner extends Component {
                     // если модуль готовый
                     if (item.address!='') {
                         // показываем вьюху готового шага
-                        progress_view.push(<ModuleComplete name={item.name} description={item.description} address={item.address} />)
+                        progress_view.push(<ModuleComplete name={item.name} module={item.module_factory} description={item.description} address={item.address} />)
                     } else {
                         // показываем форму для модуля и завершаем цикл
                         status_v = 0
@@ -71,6 +72,7 @@ export default class ViewConteiner extends Component {
                         }
                         progress_view.push(<ModuleForm
                             name={item.name}
+                            module={item.module_factory}
                             description={item.description}
                             fields={item.fields}
                             params={item.params}

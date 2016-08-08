@@ -8,7 +8,7 @@
         "url": "https://vol4tim.github.io/dapp-dao-simple/#/view/:address",
         "factory": "0xa76422591378d14fb6d94c9da48a42498d8b51da",
         "core": {
-            "name": "Aira BuilderDAO",
+            "module_factory": "Aira BuilderDAO",
             "params": {
                 "_dao_name": "Название dao",
                 "_dao_description": "Описание dao",
@@ -18,7 +18,10 @@
             }
         },
         "modules": [
-            "Aira BuilderTokenEther"
+            {
+                "name": "DAO shares",
+                "module_factory": "Aira BuilderTokenEther"
+            }
         ]
     }
 ]

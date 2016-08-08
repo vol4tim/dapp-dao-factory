@@ -8,7 +8,7 @@ const Sidebar = function(props) {
         <li className="list-group-item active">Модули:</li>
         {!_.isEmpty(core) &&
             <li className={(core.address!='') ? 'list-group-item list-group-item-success': 'list-group-item'}>
-                {core.name}
+                {core.module_factory}
             </li>
         }
         {modules.map(function(item, index) {
@@ -16,7 +16,10 @@ const Sidebar = function(props) {
             if (item && item.address!='') {
                 css = 'list-group-item list-group-item-success'
             }
-            return <li key={index} className={css}>{item.name}</li>
+            return <li key={index} className={css}>
+                {item.name}
+                <br /><small>{item.module_factory}</small>
+            </li>
         })}
         {link_create &&
             <li className="list-group-item">

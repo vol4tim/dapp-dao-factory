@@ -10,12 +10,13 @@ export default class ModuleForm extends Component {
             error,
             submitting,
             name,
+            module,
             description,
             params
         } = this.props
 
         return <div className="panel panel-default">
-            <div className="panel-heading">Модуль "{name}" {description}</div>
+            <div className="panel-heading">{name} | Модуль "{module}" {description}</div>
             <div className="panel-body">
                 <form className="form-horizontal" onSubmit={handleSubmit}>
                     {Object.keys(fields).map((name, index) => {
@@ -63,6 +64,7 @@ ModuleForm.propTypes = {
     error: PropTypes.string,
     submitting: PropTypes.bool.isRequired,
     name: PropTypes.string.isRequired,
+    module: PropTypes.string.isRequired,
     description: PropTypes.string,
     params: PropTypes.array.isRequired
 }

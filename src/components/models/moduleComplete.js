@@ -1,10 +1,10 @@
 import React, { PropTypes } from 'react'
 
 const ModuleComplete = function(props) {
-    const { name, description, address } = props
+    const { name, module, description, address } = props
 
     return <div className="panel panel-default">
-        <div className="panel-heading">Модуль "{name}" {description}</div>
+        <div className="panel-heading">{name} | Модуль "{module}" {description}</div>
         <div className="panel-body">
             Готово. Адрес: {address}
         </div>
@@ -13,6 +13,7 @@ const ModuleComplete = function(props) {
 
 ModuleComplete.propTypes = {
     name: PropTypes.string.isRequired,
+    module: PropTypes.string.isRequired,
     description: PropTypes.string,
     address: PropTypes.string.isRequired
 }
