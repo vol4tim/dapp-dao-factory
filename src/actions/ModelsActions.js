@@ -157,7 +157,7 @@ export function submitStep(factory_address, progress, module_index, last, params
             then((abi)=>{
                 core_abi = abi.data;
                 var factory = getContract(core_abi, factory_address);
-                var builder = getContract(module.abi, factory/*.getModule(module.name)*/);
+                var builder = getContract(module.abi, factory.getModule(module.name));
                 return createModule(params, builder)
             }).
             then((new_module_address)=>{
