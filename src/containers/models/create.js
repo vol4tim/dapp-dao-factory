@@ -6,19 +6,20 @@ import Layout from '../../components/models/layout';
 import Sidebar from '../../components/models/sidebar';
 import NotFound from '../../components/models/notFound';
 
-import ModuleComplete from '../../components/models/ModuleComplete'
-import ModuleForm from '../../components/models/ModuleForm'
-import Done from '../../components/models/Done'
+import ModuleComplete from '../../components/models/moduleComplete'
+import ModuleForm from '../../components/models/moduleForm'
+import ModuleRemove from '../../components/models/moduleRemove'
+import Done from '../../components/models/done'
 
 import { getModelByCode } from '../../selectors/models';
 import * as ModelsActions from '../../actions/ModelsActions'
 
-export default class ViewConteiner extends Component {
+export default class CreateConteiner extends Component {
     getProgress() {
-        const { init, model, progress, startProgress, submitStep } = this.props
+        const { init, model, progress, startProgress, submitStep, removeStep } = this.props
 
         if (init) {
-            startProgress(model)
+            startProgress('create', model)
         }
 
         const { factory, url, core, modules, status } = progress
@@ -70,15 +71,24 @@ export default class ViewConteiner extends Component {
                         if (modules.length != (index + 1)) {
                             last = false;
                         }
-                        progress_view.push(<ModuleForm
-                            name={item.name}
-                            module={item.module_factory}
-                            description={item.description}
-                            fields={item.fields}
-                            params={item.params}
-                            data={item.data}
-                            onSubmit={(values)=>submitStep(factory, progress, index, last, values)}
-                        />)
+                        if (item.action == 'remove') {
+                            progress_view.push(<ModuleRemove
+                                name={item.name}
+                                module={item.module_factory}
+                                description={item.description}
+                                onSubmit={()=>removeStep(factory, progress, index, last)}
+                            />)
+                        } else {
+                            progress_view.push(<ModuleForm
+                                name={item.name}
+                                module={item.module_factory}
+                                description={item.description}
+                                fields={item.fields}
+                                params={item.params}
+                                data={item.data}
+                                onSubmit={(values)=>submitStep(factory, progress, index, last, values)}
+                            />)
+                        }
                         return false;
                     }
                 })
@@ -106,7 +116,7 @@ export default class ViewConteiner extends Component {
         if (!_.isEmpty(this.props.progress)) {
             var link_create
             if (this.props.progress.status == 1) {
-                link_create = <button className="btn btn-default" onClick={()=>this.props.startProgress(this.props.model)}>Создать еще</button>
+                link_create = <button className="btn btn-default" onClick={()=>this.props.startProgress('create', this.props.model)}>Создать еще</button>
             }
             return <Layout {...this.props.progress}
                 sidebar={<Sidebar {...this.props.progress}
@@ -118,13 +128,12 @@ export default class ViewConteiner extends Component {
 }
 
 function mapStateToProps(state, props) {
-    var model = getModelByCode(state.models.items, props.params.code);
+    var model = getModelByCode(state, props.params.code);
     var init = false
     var progress = state.models.progress
-    if (model && (_.isEmpty(state.models.progress) || state.models.progress.code != props.params.code)) {
+    if (model && (_.isEmpty(progress) || progress.code != props.params.code)) {
         init = true
     }
-
     return {
         model,
         progress,
@@ -136,8 +145,9 @@ function mapDispatchToProps(dispatch) {
     const modelsActions = bindActionCreators(ModelsActions, dispatch);
     return {
         startProgress: modelsActions.startProgress,
-        submitStep: modelsActions.submitStep
+        submitStep: modelsActions.submitStep,
+        removeStep: modelsActions.submitStep
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ViewConteiner)
+export default connect(mapStateToProps, mapDispatchToProps)(CreateConteiner)

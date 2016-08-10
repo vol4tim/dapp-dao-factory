@@ -2,9 +2,9 @@ import {startSubmit, stopSubmit, reset} from 'redux-form';
 import _ from 'lodash'
 import axios from 'axios'
 import { LOAD, START_PROGRESS, UPDATE_PROGRESS } from '../constants/Models'
-import { loadAbis, loadAbiByName, getContract, createModule, linkCore } from '../utils/dao_factory'
+import { loadAbis, loadAbiByName, getContract, createModule, removeModule, linkCore } from '../utils/dao_factory'
 import { loader as appLoader } from './AppActions'
-import { add as daoAdd } from './DaosActions'
+import { add as daoAdd, update as daoUpdate } from './DaosActions'
 
 export function load() {
     return dispatch => {
@@ -23,13 +23,15 @@ export function load() {
     }
 }
 
-export function startProgress(model) {
+export function startProgress(action, model) {
     return dispatch => {
-        var abi_names = _.map(model.modules, 'module_factory');
+        var progress = {...model};
+
+        var abi_names = _.map(progress.modules, 'module_factory');
         abi_names = _.uniq(abi_names);
         abi_names = _.compact(abi_names);
-        if (!_.isEmpty(model.core)) {
-            abi_names.unshift(model.core.module_factory);
+        if (!_.isEmpty(progress.core)) {
+            abi_names.unshift(progress.core.module_factory);
         }
         abi_names.unshift('Core');
 
@@ -42,13 +44,13 @@ export function startProgress(model) {
                 var abi, func;
 
                 // подготавливаем данные для формы для создания core
-                if (!_.isEmpty(model.core)) {
-                    abi = abis[model.core.module_factory]
+                if (!_.isEmpty(progress.core)) {
+                    abi = abis[progress.core.module_factory]
                     func = _.find(abi, {name: 'create'});
                     var fields = (func) ? _.map(func.inputs, 'name') : []
                     var labels = {}
-                    if (_.has(model.core, 'params')) {
-                        labels = model.core.params
+                    if (_.has(progress.core, 'params')) {
+                        labels = progress.core.params
                     }
                     var params = (func) ? _.map(func.inputs, function(item) {
                         var label = item.name
@@ -61,8 +63,8 @@ export function startProgress(model) {
                     var data = _.reduce(fields, function(result, value) {
                         return _.set(result, value, '');
                     }, {});
-                    model.core = {
-                        ...model.core,
+                    progress.core = {
+                        ...progress.core,
                         abi: abi,
                         fields: fields,
                         params: params,
@@ -71,7 +73,7 @@ export function startProgress(model) {
                 }
 
                 // подготавливаем данные для формы для для каждого из требуемого модуля
-                model.modules = _.map(model.modules, function(module) {
+                progress.modules = _.map(progress.modules, function(module) {
                     abi = abis[module.module_factory]
                     func = _.find(abi, {name: 'create'});
                     var fields = (func) ? _.map(func.inputs, 'name') : []
@@ -83,13 +85,18 @@ export function startProgress(model) {
                         }
                         return label + ' ('+ item.type +')'
                     }) : []
-                    // будим запрашивать для каждого модуля название с которым он будет сохранятся в core
-                    //fields.unshift('name_module_core');
-                    //params.unshift('Название модуля');
                     // данные для инициализации формы (начальные данные в полях)
                     var data = _.reduce(fields, function(result, value) {
                         return _.set(result, value, '');
                     }, {});
+
+                    if (!_.has(module, 'action')) {
+                        module.action = 'add';
+                    }
+                    if (module.action == 'update') {
+                        module.address = ''
+                    }
+
                     return {
                         ...module,
                         abi: abi,
@@ -100,9 +107,9 @@ export function startProgress(model) {
                 });
 
                 // привязываем готовые модули
-                model.modules = _.map(model.modules, function(item) {
+                progress.modules = _.map(progress.modules, function(item) {
                     _.each(item.params_link, function(index, param) {
-                        item.data[param] = model.modules[index].address
+                        item.data[param] = progress.modules[index].address
                     })
                     return item
                 })
@@ -111,12 +118,114 @@ export function startProgress(model) {
                     type: START_PROGRESS,
                     payload: {
                         status: 0,
-                        ...model
+                        action,
+                        ...progress
                     }
                 })
             }).
             catch(function(e) {
                 console.log('START_PROGRESS ERR', e);
+            });
+    }
+}
+
+function getUpdates(updates, version) {
+    var skip = true;
+    return _.reduce(updates, function(result, value) {
+        if (version == value.version) {
+            skip = false
+        }
+        if (skip == true) {
+            return [];
+        }
+        _.map(value.modules, function(item) {
+            var index = _.findIndex(result, {name: item.name})
+            // если модуля нет в результате
+            if (index == -1) {
+                //то добавляем его как есть
+                result.push(item);
+            } else { //иначе
+                if (item.action == 'remove') { //если модуль нужно удалить
+                    if (result[index].action == 'add') {
+                        // нужно такой модуль удалить из результата
+                        result = _.filter(result, function(item, i) {
+                            if (index != i) {
+                                return true
+                            }
+                        })
+                    } else {
+                        //обновляем модуль в результате на удаление
+                        result[index].action = 'remove'
+                    }
+                } else if (item.action == 'add') { //если модуль нужно добавить
+                    //если модуль был на удаление
+                    if (result[index].action == 'remove') {
+                        //то действие обновляем на обновить
+                        result[index].action = 'update'
+                    } else {
+                        //result.push(item); нужно добавить но не понятно что делать с одинаковыми именами
+                    }
+                } else if (item.action == 'update') { //если модуль нужно обновить
+                    //если модуль был на удаление
+                    if (result[index].action == 'remove') {
+                        //то действие обновляем на обновить
+                        result[index].action = 'update'
+                    }
+                }
+            }
+        })
+        return result;
+    }, []);
+}
+
+export function startUpdateProgress(dao_version, dao_address, model) {
+    return dispatch => {
+        var progress = {...model};
+
+        var updates = getUpdates(progress.updates, dao_version)
+        if (!_.isEmpty(progress.core)) {
+            progress.core = {
+                ...progress.core,
+                address: dao_address
+            };
+        }
+
+        var core_abi;
+        loadAbiByName('Core').
+            then((abi)=>{
+                core_abi = abi.data;
+                var dao = getContract(core_abi, dao_address);
+
+                // привязываем к модулям адреса
+                progress.modules = _.map(progress.modules, function(item) {
+                    var address = dao.getModule(item.name)
+                    if (address=='0x0000000000000000000000000000000000000000') {
+                        address = ''
+                    }
+                    return {
+                        ...item,
+                        address
+                    }
+                })
+
+                _.forEach(updates, function(item){
+                    const i = _.findIndex(progress.modules, {name: item.name})
+                    if (item.action == 'add' && i == -1) {
+                        item.address = ''
+                        progress.modules.push(item)
+                    } else if (item.action == 'update') {
+                        progress.modules[i].action = 'update'
+                        progress.modules[i].address = ''
+                    } else if (item.action == 'remove') {
+                        item.address = ''
+                        progress.modules.push(item)
+                    }
+                })
+
+                dispatch(startProgress('update', progress))
+            }).
+            catch(function(e) {
+                console.log('LOAD CORE ABI', e);
             });
     }
 }
@@ -134,6 +243,8 @@ export function updateProgress(module_index, address, last) {
 
 export function submitStep(factory_address, progress, module_index, last, params) {
     return dispatch => {
+        console.log('module_index',module_index);
+        var module;
         if (!_.isEmpty(progress.core) && module_index == -1) {
             module = progress.core
         } else {
@@ -156,6 +267,7 @@ export function submitStep(factory_address, progress, module_index, last, params
             }).
             then((new_module_address)=>{
                 if (module_index != -1) {
+                    console.log('module.name',module.name);
                     var core = getContract(core_abi, progress.core.address);
                     return linkCore(core, module.name, new_module_address)
                 }
@@ -175,7 +287,51 @@ export function submitStep(factory_address, progress, module_index, last, params
                         dao_address = new_module_address
                     }
                     var dao = getContract(core_abi, dao_address);
-                    dispatch(daoAdd(progress.code, dao.name(), dao_address, progress.version))
+                    if (progress.action == 'update') {
+                        dispatch(daoUpdate(dao_address, progress.version))
+                    } else {
+                        dispatch(daoAdd(progress.code, dao.name(), dao_address, progress.version))
+                    }
+                }
+            }).
+            catch(function(e) {
+                console.log('SUBMIT ERR', e);
+                dispatch(stopSubmit('ModuleForm', {error: e}));
+            });
+    }
+}
+
+export function removeStep(factory_address, progress, module_index, last) {
+    return dispatch => {
+        var module = progress.modules[module_index]
+
+        if (!_.isObject(module)) {
+            console.log('SUBMIT ERR NOT FIND MODULE');
+            return;
+        }
+
+        dispatch(startSubmit('ModuleForm'));
+
+        var core_abi;
+        loadAbiByName('Core').
+            then((abi)=>{
+                core_abi = abi.data;
+                var dao = getContract(core_abi, progress.core.address);
+                return removeModule(dao, module.name)
+            }).
+            then(()=>{
+                dispatch(stopSubmit('ModuleForm'));
+                dispatch(updateProgress(module_index, '-', last));
+                dispatch(reset('ModuleForm'));
+
+                // если готов core и нет модулей или готов последний модуль
+                if (last) {
+                    var dao = getContract(core_abi, progress.core.address);
+                    if (progress.action == 'update') {
+                        dispatch(daoUpdate(progress.core.address, progress.version))
+                    } else {
+                        dispatch(daoAdd(progress.code, dao.name(), progress.core.address, progress.version))
+                    }
                 }
             }).
             catch(function(e) {

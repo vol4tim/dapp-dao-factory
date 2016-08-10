@@ -1,10 +1,13 @@
 import React, { PropTypes } from 'react'
 
 const Layout = function(props) {
-    const { name, version, sidebar } = props
+    const { name, version, action, sidebar } = props
 
     return <div>
         <span className="label label-warning pull-right">{version}</span>
+        {action == 'update' &&
+            <span className="label label-info pull-right">обновление</span>
+        }
         <h1>{name}</h1>
         <div className="row">
             <div className="col-md-4">
@@ -20,7 +23,11 @@ const Layout = function(props) {
 Layout.propTypes = {
     name: PropTypes.string.isRequired,
     version: PropTypes.string.isRequired,
-    sidebar: PropTypes.node.isRequired
+    sidebar: PropTypes.node.isRequired,
+    action: PropTypes.string
+}
+Layout.defaultProps = {
+    action: 'create'
 }
 
 export default Layout

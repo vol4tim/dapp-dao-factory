@@ -4,6 +4,8 @@ import { bindActionCreators } from 'redux'
 import _ from 'lodash'
 import Daos from '../../components/daos';
 import * as DaosActions from '../../actions/DaosActions'
+import * as ModelsActions from '../../actions/ModelsActions'
+import { getModelByCode } from '../../selectors/models';
 
 class DaosConteiner extends Component {
     componentDidMount() {
@@ -17,14 +19,14 @@ class DaosConteiner extends Component {
 
 function mapStateToProps(state) {
     var items = _.map(state.daos.items, function(item) {
-        var model = _.find(state.models.items, {code: item.code})
+        var model = getModelByCode(state, item.code)
         if (model) {
+            item.model = model
             if (_.has(model, 'url') && model.url != '') {
                 var url_dapp = model.url
                 url_dapp = url_dapp.replace(':address', item.address)
                 item.url = url_dapp
             }
-            item.model_version = model.version
         }
         return item
     })
@@ -35,8 +37,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     const daosActions = bindActionCreators(DaosActions, dispatch);
+    const modelsActions = bindActionCreators(ModelsActions, dispatch);
     return {
-        load: daosActions.load
+        load: daosActions.load,
+        startUpdateProgress: modelsActions.startUpdateProgress
     }
 }
 

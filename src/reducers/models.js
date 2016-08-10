@@ -6,16 +6,63 @@ const initialState = {
     progress: {}
 }
 
+function normalize(model) {
+    if (!_.has(model, 'core')) {
+        model.core = {}
+    } else {
+        if (_.isString(model.core)) {
+            model.core = {
+                module_factory: model.core,
+                description: '',
+                address: ''
+            }
+        } else {
+            if (!_.has(model.core, 'description')) {
+                model.core.description = ''
+            }
+            if (!_.has(model.core, 'address')) {
+                model.core.address = ''
+            }
+        }
+    }
+    if (_.has(model, 'modules')) {
+        model.modules = _.map(model.modules, function(module) {
+            if (!_.has(module, 'name') || !_.has(module, 'module_factory')) {
+                return
+            }
+            if (!_.has(module, 'description')) {
+                module.description = ''
+            }
+            if (!_.has(module, 'address')) {
+                module.address = ''
+            }
+            if (!_.has(module, 'params')) {
+                module.params = {}
+            }
+            if (!_.has(module, 'params_link')) {
+                module.params_link = {}
+            }
+            return module
+        })
+    } else {
+        model.modules = []
+    }
+    return model
+}
+
 export default function models(state = initialState, action) {
     switch (action.type) {
         case LOAD:
-            return { ...state, items: action.payload}
+            var items = _.map(action.payload, function(model) {
+                return normalize(model)
+            })
+            return { ...state, items: items}
 
         case START_PROGRESS:
             return { ...state, progress: action.payload}
 
         case UPDATE_PROGRESS:
-            var progress = state.progress
+            var progress = {...state.progress}
 
             if (!_.isEmpty(progress.core) && action.payload.module_index == -1) {
                 var core = {...progress.core, address: action.payload.address}

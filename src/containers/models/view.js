@@ -17,7 +17,7 @@ const ViewConteiner = function(props) {
 }
 
 function mapStateToProps(state, props) {
-    const model = getModelByCode(state.models.items, props.params.code);
+    const model = getModelByCode(state, props.params.code);
     return {
         model
     }

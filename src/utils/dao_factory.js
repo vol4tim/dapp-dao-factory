@@ -45,6 +45,20 @@ export function createModule(args, builder) {
     });
 }
 
+export function removeModule(dao, name) {
+    return new Promise(function(resolve) {
+        var args = [
+			name,
+            {
+                from: web3.eth.accounts[0],
+                gas:  3000000
+            }
+        ];
+        dao.removeModule.apply(dao, args);
+		resolve();
+    });
+}
+
 export function linkCore(core, module, address) {
     return new Promise(function(resolve) {
         core.setModule(module, address, 'abi', true, {from:web3.eth.accounts[0], gas:300000})

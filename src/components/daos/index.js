@@ -4,13 +4,14 @@ import Item from './item'
 const Daos = function(props) {
     return <div className="row">
         {props.items.map(function(item, index) {
-            return <Item key={index} {...item} />
+            return <Item key={index} {...item} startUpdateProgress={props.startUpdateProgress}/>
         })}
     </div>
 }
 
 Daos.propTypes = {
-    items: PropTypes.array.isRequired
+    items: PropTypes.array.isRequired,
+    startUpdateProgress: PropTypes.func.isRequired
 }
 
 export default Daos

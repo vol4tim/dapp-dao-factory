@@ -1,4 +1,4 @@
-import { LOAD, ADD } from '../constants/Daos'
+import { LOAD, ADD, UPDATE } from '../constants/Daos'
 import Datastore from 'nedb'
 
 var db = null;
@@ -18,6 +18,21 @@ export function add(code, name, address, version) {
         db.insert(doc);
         dispatch({
             type: ADD,
+            payload: doc
+        })
+    }
+}
+
+export function update(address, version) {
+    return dispatch => {
+        var doc = {
+            address: address,
+            version: version,
+            time: Date.now()
+        }
+        db.update({ address: address }, { $set: doc }, {});
+        dispatch({
+            type: UPDATE,
             payload: doc
         })
     }
