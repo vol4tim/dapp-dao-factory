@@ -1,3 +1,5 @@
 export const LOAD = 'LOAD'
-export const START_PROGRESS = 'START_PROGRESS'
+export const CREATE = 'CREATE_DAO'
+export const UPDATE = 'UPDATE_DAO'
+export const LOAD_DATA = 'LOAD_DATA_DAO'
 export const UPDATE_PROGRESS = 'UPDATE_PROGRESS'

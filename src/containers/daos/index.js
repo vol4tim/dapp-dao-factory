@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import _ from 'lodash'
 import Daos from '../../components/daos';
 import * as DaosActions from '../../actions/DaosActions'
 import * as ModelsActions from '../../actions/ModelsActions'
-import { getModelByCode } from '../../selectors/models';
+import { getDaos } from '../../selectors/daos';
 
 class DaosConteiner extends Component {
-    componentDidMount() {
+    componentWillMount() {
         this.props.load()
     }
 
@@ -18,18 +17,7 @@ class DaosConteiner extends Component {
 }
 
 function mapStateToProps(state) {
-    var items = _.map(state.daos.items, function(item) {
-        var model = getModelByCode(state, item.code)
-        if (model) {
-            item.model = model
-            if (_.has(model, 'url') && model.url != '') {
-                var url_dapp = model.url
-                url_dapp = url_dapp.replace(':address', item.address)
-                item.url = url_dapp
-            }
-        }
-        return item
-    })
+    var items = getDaos(state)
     return {
         items
     }
@@ -40,7 +28,7 @@ function mapDispatchToProps(dispatch) {
     const modelsActions = bindActionCreators(ModelsActions, dispatch);
     return {
         load: daosActions.load,
-        startUpdateProgress: modelsActions.startUpdateProgress
+        update: modelsActions.update
     }
 }
 

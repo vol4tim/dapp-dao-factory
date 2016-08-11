@@ -4,11 +4,17 @@ const Layout = function(props) {
     const { name, version, action, sidebar } = props
 
     return <div>
-        <span className="label label-warning pull-right">{version}</span>
-        {action == 'update' &&
-            <span className="label label-info pull-right">обновление</span>
-        }
-        <h1>{name}</h1>
+        <div className="row">
+            <div className="col-md-10 col-xs-10">
+                <h1 style={{marginTop:0}}>{name}</h1>
+            </div>
+            <div className="col-md-2 col-xs-2 text-right">
+                {action == 'update' &&
+                    <span className="label label-info">обновление</span>
+                }
+                <span className="label label-warning">{version}</span>
+            </div>
+        </div>
         <div className="row">
             <div className="col-md-4">
                 {sidebar}

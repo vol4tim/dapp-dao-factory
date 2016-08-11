@@ -5,148 +5,164 @@ import _ from 'lodash'
 import Layout from '../../components/models/layout';
 import Sidebar from '../../components/models/sidebar';
 import NotFound from '../../components/models/notFound';
-
 import ModuleComplete from '../../components/models/moduleComplete'
 import ModuleForm from '../../components/models/moduleForm'
 import ModuleRemove from '../../components/models/moduleRemove'
 import Done from '../../components/models/done'
-
-import { getModelByCode } from '../../selectors/models';
 import * as ModelsActions from '../../actions/ModelsActions'
+import { getModelByCode } from '../../selectors/models';
 
 export default class CreateConteiner extends Component {
-    getProgress() {
-        const { init, model, progress, startProgress, submitStep, removeStep } = this.props
 
-        if (init) {
-            startProgress('create', model)
-        }
+    componentWillMount() {
+        this.load(this.props.progress)
+    }
 
-        const { factory, url, core, modules, status } = progress
+    componentWillUpdate(nextProps) {
+        this.load(nextProps.progress)
+    }
 
-        if (init || _.isUndefined(status)) {
-            return [];
-        }
+    load(progress) {
+        const { model, code, create, loadData, loadDataUpdate } = this.props
 
-        var progress_view = []
-        if (status == 0) {
-            var status_v = 1
-
-            // если есть модуль core
-            if (!_.isEmpty(core)) {
-                // если core готов
-                if (core.address!='') {
-                    // показываем вьюху готового шага
-                    progress_view.push(<ModuleComplete name="DAO" module={core.module_factory} description={core.description} address={core.address} />)
+        if (model) {
+            create(code, false)
+            if (!_.isEmpty(progress) && progress.status == 0) {
+                if (progress.action == 'create') {
+                    loadData(progress)
                 } else {
-                    var last = true
-                    if (modules.length>0) {
-                        last = false;
-                    }
-                    // показываем форму core
-                    progress_view.push(<ModuleForm
-                        name="DAO"
-                        module={core.module_factory}
-                        description={core.description}
-                        fields={core.fields}
-                        params={core.params}
-                        data={core.data}
-                        onSubmit={(values)=>submitStep(factory, progress, -1, last, values)}
-                    />)
-                    status_v = 0
+                    loadDataUpdate(progress)
                 }
             }
+        }
+    }
 
-            if (_.isEmpty(core) || core.address!='') {
-                // проходим по всем модулям
-                _.each(modules, function(item, index) {
-                    // если модуль готовый
-                    if (item.address!='') {
-                        // показываем вьюху готового шага
-                        progress_view.push(<ModuleComplete name={item.name} module={item.module_factory} description={item.description} address={item.address} />)
-                    } else {
-                        // показываем форму для модуля и завершаем цикл
-                        status_v = 0
-                        var last = true
-                        if (modules.length != (index + 1)) {
-                            last = false;
-                        }
-                        if (item.action == 'remove') {
-                            progress_view.push(<ModuleRemove
-                                name={item.name}
-                                module={item.module_factory}
-                                description={item.description}
-                                onSubmit={()=>removeStep(factory, progress, index, last)}
-                            />)
-                        } else {
-                            progress_view.push(<ModuleForm
-                                name={item.name}
-                                module={item.module_factory}
-                                description={item.description}
-                                fields={item.fields}
-                                params={item.params}
-                                data={item.data}
-                                onSubmit={(values)=>submitStep(factory, progress, index, last, values)}
-                            />)
-                        }
-                        return false;
-                    }
-                })
+    getProgress() {
+        const { progress, createModule, removeModule } = this.props
+        const { factory, core, modules } = progress
+
+        var progress_view = []
+
+        // если есть модуль core
+        if (!_.isEmpty(core)) {
+            // если core готов
+            if (core.address!='') {
+                // показываем вьюху готового шага
+                progress_view.push(<ModuleComplete name="Core" module={core.module_factory} description={core.description} address={core.address} />)
+            } else {
+                var last = true
+                if (modules.length>0) {
+                    last = false;
+                }
+                // показываем форму core
+                progress_view.push(<ModuleForm
+                    name="Core"
+                    module={core.module_factory}
+                    description={core.description}
+                    fields={core.fields}
+                    params={core.params}
+                    data={core.data}
+                    onSubmit={(values)=>createModule(factory, progress, -1, last, values)}
+                />)
             }
         }
 
-        if (status == 1 || status_v == 1) {
-            if (!_.isEmpty(core)) {
-                progress_view.push(<Done url_dapp={url} address={core.address} />)
-            } else {
-                progress_view.push(<Done url_dapp={url} />)
-            }
+        if (_.isEmpty(core) || core.address!='') {
+            // проходим по всем модулям
+            _.each(modules, function(item, index) {
+                // если модуль готовый
+                if (item.address!='') {
+                    // показываем вьюху готового шага
+                    progress_view.push(<ModuleComplete name={item.name} module={item.module_factory} description={item.description} address={item.address} />)
+                } else {
+                    // показываем форму для модуля и завершаем цикл
+                    var last = true
+                    if (modules.length != (index + 1)) {
+                        last = false;
+                    }
+                    if (item.action == 'remove') {
+                        progress_view.push(<ModuleRemove
+                            name={item.name}
+                            module={item.module_factory}
+                            description={item.description}
+                            onSubmit={()=>removeModule(factory, progress, index, last)}
+                        />)
+                    } else {
+                        progress_view.push(<ModuleForm
+                            name={item.name}
+                            module={item.module_factory}
+                            description={item.description}
+                            fields={item.fields}
+                            params={item.params}
+                            data={item.data}
+                            onSubmit={(values)=>createModule(factory, progress, index, last, values)}
+                        />)
+                    }
+                    return false;
+                }
+            })
         }
 
         return progress_view;
     }
 
     render() {
-        if (!this.props.model) {
+        const { model, progress, code, create } = this.props
+
+        if (!model) {
             return <NotFound />
         }
-        var progress_view = this.getProgress().map(function(item, index) {
-            return <div key={index}>{item}</div>
-        })
-        if (!_.isEmpty(this.props.progress)) {
-            var link_create
-            if (this.props.progress.status == 1) {
-                link_create = <button className="btn btn-default" onClick={()=>this.props.startProgress('create', this.props.model)}>Создать еще</button>
+
+        // если progress пустой ни чего не показываем
+        // если progress status 0 отправляем его наполнять данными для формы и погазываем индикатор загрузки
+        // если progress status 1 отображаем формы
+        // если progress status 2 отображаем готовый результат
+
+        if (!_.isEmpty(progress)) {
+            if (progress.status == 0) { // отправляем его наполнять данными для формы и пока погазываем индикатор загрузки
+                return <p>загружаем формы</p>
+            } else if (progress.status == 1) {
+                var progress_view = this.getProgress().map(function(item, index) {
+                    return <div key={index}>{item}</div>
+                })
+                return <Layout {...progress}
+                    sidebar={<Sidebar {...progress} />}
+                    children={progress_view} />
+            } else if (progress.status == 2) {
+                var done_view;
+                if (!_.isEmpty(progress.core)) {
+                    done_view = <Done url_dapp={progress.url} address={progress.core.address} />
+                } else {
+                    done_view = <Done url_dapp={progress.url} />
+                }
+                var link_create = <button className="btn btn-default" onClick={()=>create(code)}>Создать еще</button>
+                return <Layout {...progress}
+                    sidebar={<Sidebar {...progress} link_create={link_create} />}
+                    children={done_view} />
             }
-            return <Layout {...this.props.progress}
-                sidebar={<Sidebar {...this.props.progress}
-                link_create={link_create} />}
-                children={progress_view} />
         }
         return <p>...</p>
     }
 }
 
 function mapStateToProps(state, props) {
-    var model = getModelByCode(state, props.params.code);
-    var init = false
-    var progress = state.models.progress
-    if (model && (_.isEmpty(progress) || progress.code != props.params.code)) {
-        init = true
-    }
+    const progress = state.models.progress
+    const model = getModelByCode(state, props.params.code);
     return {
         model,
         progress,
-        init
+        code: props.params.code
     }
 }
 
 function mapDispatchToProps(dispatch) {
     const modelsActions = bindActionCreators(ModelsActions, dispatch);
     return {
-        startProgress: modelsActions.startProgress,
-        submitStep: modelsActions.submitStep,
-        removeStep: modelsActions.submitStep
+        create: modelsActions.create,
+        loadData: modelsActions.loadData,
+        loadDataUpdate: modelsActions.loadDataUpdate,
+        createModule: modelsActions.createModule,
+        removeModule: modelsActions.removeModule
     }
 }
 

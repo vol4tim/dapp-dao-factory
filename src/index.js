@@ -9,7 +9,7 @@ const store = configureStore()
 
 render(
     <Provider store={store}>
-        <Router history={hashHistory} routes={routes(store)} />
+        <Router history={hashHistory} routes={routes()} />
     </Provider>,
     document.getElementById('root')
 )

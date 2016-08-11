@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { LOAD, START_PROGRESS, UPDATE_PROGRESS } from '../constants/Models'
+import { LOAD, CREATE, UPDATE, LOAD_DATA, UPDATE_PROGRESS } from '../constants/Models'
 
 const initialState = {
     items: [],
@@ -58,28 +58,45 @@ export default function models(state = initialState, action) {
             })
             return { ...state, items: items}
 
-        case START_PROGRESS:
-            return { ...state, progress: action.payload}
+        case CREATE:
+            if (!_.isEmpty(state.items) && (_.isEmpty(state.progress) || state.progress.code != action.payload.code || (state.progress.status == 2 && action.payload.force))) {
+                var progress_new = _.find(state.items, {code: action.payload.code})
+                return { ...state, progress: {...progress_new, status: 0, action: 'create'}}
+            }
+            return state
+
+        case UPDATE:
+            if (!_.isEmpty(state.items)) {
+                var progress_update = _.find(state.items, {code: action.payload.code})
+                return { ...state, progress: {
+                    ...progress_update,
+                    core: {...progress_update.core, address: action.payload.address},
+                    current_version: action.payload.version,
+                    status: 0,
+                    action: 'update'
+                }}
+            }
+            return state
+
+        case LOAD_DATA:
+            return { ...state, progress: {...action.payload, status: 1}}
 
         case UPDATE_PROGRESS:
             var progress = {...state.progress}
 
-            if (!_.isEmpty(progress.core) && action.payload.module_index == -1) {
-                var core = {...progress.core, address: action.payload.address}
-                progress = {...progress, core: core}
+            if (action.payload.module_index == -1) {
+                progress.core.address = action.payload.address
             } else {
-                var modules = _.map(progress.modules, function(item, index) {
+                progress.modules = _.map(progress.modules, function(item, index) {
                     if (index == action.payload.module_index) {
                         return {...item, address: action.payload.address};
                     }
                     return item;
                 })
-                progress = {...progress, modules: modules}
             }
 
-            var status = 0
             if (action.payload.last) {
-                status = 1
+                progress.status = 2
             }
 
             // перепривязываем готовые модули, чтоб в форме уже были заполнены поля
@@ -90,7 +107,7 @@ export default function models(state = initialState, action) {
                 return item
             })
 
-            return { ...state, progress: {...progress, status: status}}
+            return { ...state, progress: progress}
 
         default:
 			return state;

@@ -14,7 +14,7 @@ export default function daos(state = initialState, action) {
             var items = state.items
             items.unshift(action.payload)
             items.pop()
-            return { ...state, items: [...items]}
+            return { ...state, items: items}
 
         case UPDATE:
             var item = _.map(state.items, function(item) {

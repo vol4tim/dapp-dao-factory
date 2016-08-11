@@ -21,7 +21,10 @@ class App extends Component {
             <Header title={this.props.title} />
             <div className="container">
                 {getWeb3() ?
-                    (!this.props.loader) ? this.props.children : <p className="text-center">Загрузка...</p>
+                    (!this.props.loader) ?
+                        this.props.children
+                        :
+                        <p className="text-center">Загрузка...</p>
                     :
                     <p>нужен mist</p>
                 }

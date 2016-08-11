@@ -7,13 +7,15 @@ import NotFound from '../../components/models/notFound';
 import { getModelByCode } from '../../selectors/models';
 
 const ViewConteiner = function(props) {
-    if (!props.model) {
+    const { model } = props
+
+    if (!model) {
         return <NotFound />
     }
-    return <Layout {...props.model}
-        sidebar={<Sidebar {...props.model}
-        link_create={<Link to={'/create/'+ props.model.code} className="btn btn-default">Создать</Link>} />}
-        children={<p>{props.model.description}</p>} />
+    return <Layout {...model}
+        sidebar={<Sidebar {...model}
+        link_create={<Link to={'/create/'+ model.code} className="btn btn-default">Создать</Link>} />}
+        children={<p>{model.description}</p>} />
 }
 
 function mapStateToProps(state, props) {
