@@ -6,143 +6,49 @@ import { loadAbis, loadAbiByName, getContract, createModule as web3CreateModule,
 import { loader as appLoader } from './AppActions'
 import { add as daoAdd, update as daoUpdate } from './DaosActions'
 
-export function load() {
-    return dispatch => {
-        dispatch(appLoader(true))
-        axios.get('dapps.json').
-            then((result)=>{
-                dispatch({
-                    type: LOAD,
-                    payload: result.data
-                })
-                dispatch(appLoader(false))
-            }).
-            catch(function(e) {
-                console.log('LOAD ERR',e);
-            });
+function getNamesAbi(progress) {
+    var progress_data = {...progress};
+    var abi_names = _.map(progress_data.modules, 'module_factory');
+    abi_names = _.uniq(abi_names);
+    abi_names = _.compact(abi_names);
+    if (!_.isEmpty(progress_data.core)) {
+        abi_names.unshift(progress_data.core.module_factory);
     }
+    abi_names.unshift('Core');
+    return abi_names
 }
 
-export function create(code, force = true) {
+function getModuleData(module, abi) {
+    var func = _.find(abi, {name: 'create'});
+    var fields = (func) ? _.map(func.inputs, 'name') : []
+    var labels = {}
+    if (_.has(module, 'params')) {
+        labels = module.params
+    }
+    var params = (func) ? _.map(func.inputs, function(item) {
+        var label = item.name
+        if (_.has(labels, item.name)) {
+            label = labels[item.name]
+        }
+        return label + ' ('+ item.type +')'
+    }) : []
+    // данные для инициализации формы (начальные данные в полях)
+    var data = _.reduce(fields, function(result, value) {
+        return _.set(result, value, '');
+    }, {});
+    if (!_.has(module, 'action')) {
+        module.action = 'add';
+    }
+    if (module.action == 'update') {
+        module.address = ''
+    }
     return {
-        type: CREATE,
-        payload: {
-            code,
-            force
-        }
-    }
-}
-
-export function update(code, version, address) {
-    return {
-        type: UPDATE,
-        payload: {
-            code,
-            version,
-            address
-        }
-    }
-}
-
-export function loadData(progress) {
-    return dispatch => {
-        var progress_data = {...progress};
-
-        var abi_names = _.map(progress_data.modules, 'module_factory');
-        abi_names = _.uniq(abi_names);
-        abi_names = _.compact(abi_names);
-        if (!_.isEmpty(progress_data.core)) {
-            abi_names.unshift(progress_data.core.module_factory);
-        }
-        abi_names.unshift('Core');
-
-        loadAbis(abi_names).
-            then((results)=>{
-                var abis = _.reduce(abi_names, function(result, value, index) {
-                    return _.set(result, value, results[index].data);
-                }, {});
-
-                var abi, func;
-                // подготавливаем данные для формы для создания core
-                if (!_.isEmpty(progress_data.core)) {
-                    abi = abis[progress_data.core.module_factory]
-                    func = _.find(abi, {name: 'create'});
-                    var fields = (func) ? _.map(func.inputs, 'name') : []
-                    var labels = {}
-                    if (_.has(progress_data.core, 'params')) {
-                        labels = progress_data.core.params
-                    }
-                    var params = (func) ? _.map(func.inputs, function(item) {
-                        var label = item.name
-                        if (_.has(labels, item.name)) {
-                            label = labels[item.name]
-                        }
-                        return label + ' ('+ item.type +')'
-                    }) : []
-                    // данные для инициализации формы (начальные данные в полях)
-                    var data = _.reduce(fields, function(result, value) {
-                        return _.set(result, value, '');
-                    }, {});
-                    progress_data.core = {
-                        ...progress_data.core,
-                        abi: abi,
-                        fields: fields,
-                        params: params,
-                        data: data
-                    };
-                }
-
-                // подготавливаем данные для формы для для каждого из требуемого модуля
-                progress_data.modules = _.map(progress_data.modules, function(module) {
-                    abi = abis[module.module_factory]
-                    func = _.find(abi, {name: 'create'});
-                    var fields = (func) ? _.map(func.inputs, 'name') : []
-                    var labels = module.params;
-                    var params = (func) ? _.map(func.inputs, function(item) {
-                        var label = item.name
-                        if (_.has(labels, item.name)) {
-                            label = labels[item.name]
-                        }
-                        return label + ' ('+ item.type +')'
-                    }) : []
-                    // данные для инициализации формы (начальные данные в полях)
-                    var data = _.reduce(fields, function(result, value) {
-                        return _.set(result, value, '');
-                    }, {});
-
-                    if (!_.has(module, 'action')) {
-                        module.action = 'add';
-                    }
-                    if (module.action == 'update') {
-                        module.address = ''
-                    }
-
-                    return {
-                        ...module,
-                        abi: abi,
-                        fields: fields,
-                        params: params,
-                        data: data
-                    }
-                });
-
-                // привязываем готовые модули
-                progress_data.modules = _.map(progress_data.modules, function(item) {
-                    _.each(item.params_link, function(index, param) {
-                        item.data[param] = progress_data.modules[index].address
-                    })
-                    return item
-                })
-
-                dispatch({
-                    type: LOAD_DATA,
-                    payload: progress_data
-                })
-            }).
-            catch(function(e) {
-                console.log('LOAD_DATA_DAO ERR', e);
-            });
-    }
+        ...module,
+        abi: abi,
+        fields: fields,
+        params: params,
+        data: data
+    };
 }
 
 function getUpdates(updates, version) {
@@ -194,15 +100,96 @@ function getUpdates(updates, version) {
     }, []);
 }
 
+export function load() {
+    return dispatch => {
+        dispatch(appLoader(true))
+        axios.get('dapps.json').
+            then((result)=>{
+                dispatch({
+                    type: LOAD,
+                    payload: result.data
+                })
+                dispatch(appLoader(false))
+            }).
+            catch(function(e) {
+                console.log('LOAD ERR',e);
+            });
+    }
+}
+
+export function create(code, force = true) {
+    return {
+        type: CREATE,
+        payload: {
+            code,
+            force
+        }
+    }
+}
+
+export function update(code, version, address) {
+    return {
+        type: UPDATE,
+        payload: {
+            code,
+            version,
+            address
+        }
+    }
+}
+
+export function updateProgress(module_index, address, last) {
+    return {
+        type: UPDATE_PROGRESS,
+        payload: {
+            module_index,
+            address,
+            last
+        }
+    }
+}
+
+export function loadData(progress) {
+    return dispatch => {
+        var progress_data = {...progress};
+        loadAbis(getNamesAbi(progress_data)).
+            then((abis)=>{
+                // подготавливаем данные для формы для создания core
+                if (!_.isEmpty(progress_data.core)) {
+                    progress_data.core = getModuleData(progress_data.core, abis[progress_data.core.module_factory])
+                }
+
+                // подготавливаем данные для формы для для каждого из требуемого модуля
+                progress_data.modules = _.map(progress_data.modules, function(module) {
+                    return getModuleData(module, abis[module.module_factory])
+                });
+
+                // привязываем готовые модули
+                progress_data.modules = _.map(progress_data.modules, function(item) {
+                    _.each(item.params_link, function(index, param) {
+                        item.data[param] = progress_data.modules[index].address
+                    })
+                    return item
+                })
+
+                dispatch({
+                    type: LOAD_DATA,
+                    payload: progress_data
+                })
+            }).
+            catch(function(e) {
+                console.log('LOAD_DATA_DAO ERR', e);
+            });
+    }
+}
+
 export function loadDataUpdate(progress) {
     return dispatch => {
         var progress_new = {...progress};
         var updates = getUpdates(progress_new.updates, progress_new.current_version)
-        var core_abi;
         loadAbiByName('Core').
             then((abi)=>{
-                core_abi = abi.data;
-                var dao = getContract(core_abi, progress_new.core.address);
+                var dao = getContract(abi, progress_new.core.address);
 
                 // привязываем к модулям адреса
                 progress_new.modules = _.map(progress_new.modules, function(item) {
@@ -238,17 +225,6 @@ export function loadDataUpdate(progress) {
     }
 }
 
-export function updateProgress(module_index, address, last) {
-    return {
-        type: UPDATE_PROGRESS,
-        payload: {
-            module_index,
-            address,
-            last
-        }
-    }
-}
-
 export function createModule(factory_address, progress, module_index, last, params) {
     return dispatch => {
         var module;
@@ -267,7 +243,7 @@ export function createModule(factory_address, progress, module_index, last, para
         var core_abi;
         loadAbiByName('Core').
             then((abi)=>{
-                core_abi = abi.data;
+                core_abi = abi;
                 var factory = getContract(core_abi, factory_address);
                 var builder = getContract(module.abi, factory.getModule(module.module_factory));
                 return web3CreateModule(params, builder)
@@ -321,7 +297,7 @@ export function removeModule(factory_address, progress, module_index, last) {
         var core_abi;
         loadAbiByName('Core').
             then((abi)=>{
-                core_abi = abi.data;
+                core_abi = abi;
                 var dao = getContract(core_abi, progress.core.address);
                 return web3RemoveModule(dao, module.name)
             }).
