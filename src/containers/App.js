@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { getWeb3 } from '../utils/dao_factory'
+import { getWeb3, isAccounts } from '../utils/dao_factory'
 import * as ModelsActions from '../actions/ModelsActions'
 
 import Header from '../components/header'
@@ -21,10 +21,13 @@ class App extends Component {
             <Header title={this.props.title} />
             <div className="container">
                 {getWeb3() ?
-                    (!this.props.loader) ?
-                        this.props.children
+                    isAccounts() ?
+                        (!this.props.loader) ?
+                            this.props.children
+                            :
+                            <p className="text-center">Загрузка...</p>
                         :
-                        <p className="text-center">Загрузка...</p>
+                        <p>нет аккаунтов</p>
                     :
                     <p>нужен mist</p>
                 }

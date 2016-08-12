@@ -13,6 +13,13 @@ export function getWeb3() {
     return web3
 }
 
+export function isAccounts() {
+	if (web3.eth.accounts.length > 0) {
+		return true
+	}
+	return false
+}
+
 export function getUrlAbi(contract) {
     contract = contract.split(' ')
     contract = contract.pop()
