@@ -79,18 +79,27 @@ export function linkCore(core, module, address) {
 }
 
 function loadAbi(url) {
-    return axios.get(url);
+    return axios.get(url).
+		then((results)=>{
+			return results.data;
+		});
 }
 
 export function loadAbiByName(name) {
     return loadAbi(getUrlAbi(name));
 }
 
-export function loadAbis(abis) {
-    var req = _.map(abis, function(item){
+export function loadAbis(abi_names) {
+    var req = _.map(abi_names, function(item){
         return loadAbiByName(item)
     })
-    return axios.all(req)
+    return axios.all(req).
+		then((results)=>{
+			var abis = _.reduce(abi_names, function(result, value, index) {
+				return _.set(result, value, results[index]);
+			}, {});
+			return abis
+		});
 }
 
 export function getContract(abi, address) {
