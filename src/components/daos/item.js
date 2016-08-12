@@ -44,3 +44,5 @@ Item.propTypes = {
 Item.defaultProps = {
     url: ''
 }
+
+export default Item
