@@ -15,6 +15,9 @@
                 "_shares_name": "Название токена акций",
                 "_shares_symbol": "Знак токена акций",
                 "_shares_count": "Начальное кол-во акций"
+            },
+            "const": {
+                "_shares_name": "DAO shares"
             }
         },
         "modules": [

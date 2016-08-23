@@ -34,7 +34,11 @@ function getModuleData(module, abi) {
     }) : []
     // данные для инициализации формы (начальные данные в полях)
     var data = _.reduce(fields, function(result, value) {
-        return _.set(result, value, '');
+        var val = ''
+        if (_.has(module, 'const') && _.has(module.const, value)) {
+            val = module.const[value]
+        }
+        return _.set(result, value, val);
     }, {});
     if (!_.has(module, 'action')) {
         module.action = 'add';

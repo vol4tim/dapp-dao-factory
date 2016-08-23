@@ -1,5 +1,6 @@
 import React, { PropTypes, Component } from 'react'
 import { reduxForm } from 'redux-form'
+import _ from 'lodash'
 import style from './style.css'
 
 export default class ModuleForm extends Component {
@@ -12,7 +13,8 @@ export default class ModuleForm extends Component {
             name,
             module,
             description,
-            params
+            params,
+            disableds
         } = this.props
 
         return <div className="panel panel-default">
@@ -20,12 +22,13 @@ export default class ModuleForm extends Component {
             <div className="panel-body">
                 <form className="form-horizontal" onSubmit={handleSubmit}>
                     {Object.keys(fields).map((name, index) => {
+                        const disabled = (_.findIndex(disableds, (item)=>item==name) >= 0) ? true : false
                         const field = fields[name]
                         return (
                             <div key={index} className="form-group">
                                 <label className="col-sm-5 control-label">{params[index]}</label>
                                 <div className="col-sm-7">
-                                    <input type="text" className="form-control" placeholder={params[index]} {...field} />
+                                    <input type="text" className="form-control" placeholder={params[index]} disabled={disabled} {...field} />
                                 </div>
                                 {field.touched && field.error ? field.error : ''}
                             </div>
@@ -66,10 +69,12 @@ ModuleForm.propTypes = {
     name: PropTypes.string.isRequired,
     module: PropTypes.string.isRequired,
     description: PropTypes.string,
-    params: PropTypes.array.isRequired
+    params: PropTypes.array.isRequired,
+    disableds: PropTypes.array
 }
 ModuleForm.defaultProps = {
-    description: ''
+    description: '',
+    disableds: []
 }
 
 function mapStateToProps(state, props) {

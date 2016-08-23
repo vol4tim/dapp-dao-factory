@@ -41,9 +41,9 @@ export function createModule(args, builder) {
             }
         ]);
 
-        var e = builder.Builded({}, '', function(error, result){
+        builder.Builded({}, '', function(error, result){
             if (error) {
-                reject(e);
+                reject(error);
             }
             resolve(result.args.instance);
         })
