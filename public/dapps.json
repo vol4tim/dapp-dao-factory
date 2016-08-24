@@ -23,7 +23,7 @@
         "modules": [
             {
                 "name": "DAO credits",
-                "module_factory": "Aira BuilderTokenEther"
+                "module_factory": "Aira BuilderTokenEmission"
             }
         ]
     }
