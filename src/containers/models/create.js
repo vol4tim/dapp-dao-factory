@@ -62,7 +62,7 @@ export default class CreateConteiner extends Component {
                     fields={core.fields}
                     params={core.params}
                     data={core.data}
-                    disableds={(_.has(core, 'const')) ? _.keys(core.const) : {}}
+                    disableds={(_.has(core, 'const')) ? _.keys(core.const) : []}
                     onSubmit={(values)=>createModule(factory, progress, -1, last, values)}
                 />)
             }
@@ -96,7 +96,7 @@ export default class CreateConteiner extends Component {
                             fields={item.fields}
                             params={item.params}
                             data={item.data}
-                            disableds={(_.has(item, 'const')) ? _.keys(item.const) : {}}
+                            disableds={(_.has(item, 'const')) ? _.keys(item.const) : []}
                             onSubmit={(values)=>createModule(factory, progress, index, last, values)}
                         />)
                     }
