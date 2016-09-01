@@ -2,7 +2,7 @@
     {
         "code": "dao_ooo",
         "name": "DAO OOO",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "description": "DAO OOO description",
         "author": "",
         "url": "https://vol4tim.github.io/dapp-dao-simple/#/view/:address",
@@ -24,6 +24,22 @@
             {
                 "name": "DAO credits",
                 "module_factory": "Aira BuilderTokenEmission"
+            },
+            {
+                "name": "DAO market",
+                "module_factory": "Aira BuilderMarket"
+            }
+        ],
+        "updates": [
+            {
+                "version": "1.0.0",
+                "modules": [
+                    {
+                        "name": "DAO market",
+                        "module_factory": "Aira BuilderMarket",
+                        "action": "add"
+                    }
+                ]
             }
         ]
     }
