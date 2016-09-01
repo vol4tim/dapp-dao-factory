@@ -5,7 +5,7 @@
         "version": "1.0.1",
         "description": "DAO OOO description",
         "author": "",
-        "url": "https://vol4tim.github.io/dapp-dao-simple/#/view/:address",
+        "url": "https://vol4tim.github.io/dapp-dao-simple/#/app/:address",
         "factory": "0xa76422591378d14fb6d94c9da48a42498d8b51da",
         "core": {
             "module_factory": "Aira BuilderDAO",
