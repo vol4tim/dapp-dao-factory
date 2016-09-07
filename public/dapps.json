@@ -1,0 +1,46 @@
+[
+    {
+        "code": "dao_ooo",
+        "name": "DAO OOO",
+        "version": "1.0.1",
+        "description": "DAO OOO description",
+        "author": "",
+        "url": "https://vol4tim.github.io/dapp-dao-simple/#/app/:address",
+        "factory": "0xa76422591378d14fb6d94c9da48a42498d8b51da",
+        "core": {
+            "module_factory": "Aira BuilderDAO",
+            "params": {
+                "_dao_name": "Название dao",
+                "_dao_description": "Описание dao",
+                "_shares_name": "Название токена акций",
+                "_shares_symbol": "Знак токена акций",
+                "_shares_count": "Начальное кол-во акций"
+            },
+            "const": {
+                "_shares_name": "DAO shares"
+            }
+        },
+        "modules": [
+            {
+                "name": "DAO credits",
+                "module_factory": "Aira BuilderTokenEmission"
+            },
+            {
+                "name": "DAO market",
+                "module_factory": "Aira BuilderMarket"
+            }
+        ],
+        "updates": [
+            {
+                "version": "1.0.0",
+                "modules": [
+                    {
+                        "name": "DAO market",
+                        "module_factory": "Aira BuilderMarket",
+                        "action": "add"
+                    }
+                ]
+            }
+        ]
+    }
+]
